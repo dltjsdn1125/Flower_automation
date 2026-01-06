@@ -3,8 +3,7 @@
     "description": "발주 관리 시스템",
     "type": "project",
     "require": {
-        "php": ">=7.4",
-        "supabase/supabase-php": "^2.0"
+        "php": ">=7.4"
     },
     "autoload": {
         "psr-4": {
