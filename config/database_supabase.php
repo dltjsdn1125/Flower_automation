@@ -213,9 +213,21 @@ class SupabaseQuery {
             $result['where'] = $this->parseWhere($whereClause);
         }
         
-        // ORDER BY
-        if (preg_match('/ORDER\s+BY\s+([^\s]+(?:\s+(?:ASC|DESC))?)/i', $sql, $matches)) {
-            $result['order'] = trim($matches[1]);
+        // ORDER BY (복잡한 ORDER BY 지원: display_order ASC, name ASC)
+        if (preg_match('/ORDER\s+BY\s+(.+?)(?:\s+LIMIT|\s+OFFSET|$)/i', $sql, $matches)) {
+            $orderClause = trim($matches[1]);
+            // 여러 컬럼을 PostgREST 형식으로 변환 (display_order.asc,name.asc)
+            $orderParts = [];
+            if (preg_match_all('/(\w+)\s*(ASC|DESC)?/i', $orderClause, $orderMatches, PREG_SET_ORDER)) {
+                foreach ($orderMatches as $orderMatch) {
+                    $col = trim($orderMatch[1]);
+                    $dir = strtolower(trim($orderMatch[2] ?? 'asc'));
+                    $orderParts[] = $col . '.' . $dir;
+                }
+            }
+            if (!empty($orderParts)) {
+                $result['order'] = implode(',', $orderParts);
+            }
         }
         
         // LIMIT
