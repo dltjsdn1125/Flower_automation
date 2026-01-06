@@ -125,21 +125,47 @@ class SupabaseQuery {
             $queryParams['offset'] = $parsed['offset'];
         }
         
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $url . (!empty($queryParams) ? '?' . http_build_query($queryParams) : ''),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
-                'apikey: ' . $this->supabaseKey,
-                'Authorization: Bearer ' . $this->supabaseKey,
-                'Content-Type: application/json',
-                'Prefer: return=representation'
-            ]
-        ]);
+        // cURL 또는 file_get_contents 사용
+        $fullUrl = $url . (!empty($queryParams) ? '?' . http_build_query($queryParams) : '');
         
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        if (function_exists('curl_init')) {
+            // cURL 사용
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $fullUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    'apikey: ' . $this->supabaseKey,
+                    'Authorization: Bearer ' . $this->supabaseKey,
+                    'Content-Type: application/json',
+                    'Prefer: return=representation'
+                ]
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+        } else {
+            // file_get_contents 사용 (cURL이 없는 경우)
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'header' => [
+                        'apikey: ' . $this->supabaseKey,
+                        'Authorization: Bearer ' . $this->supabaseKey,
+                        'Content-Type: application/json',
+                        'Prefer: return=representation'
+                    ],
+                    'ignore_errors' => true
+                ]
+            ]);
+            
+            $response = @file_get_contents($fullUrl, false, $context);
+            $httpCode = 200; // file_get_contents는 HTTP 코드를 직접 반환하지 않으므로 기본값 사용
+            if ($response === false) {
+                $httpCode = 500;
+            }
+        }
         
         if ($httpCode >= 200 && $httpCode < 300) {
             $data = json_decode($response, true);
@@ -205,12 +231,24 @@ class SupabaseQuery {
     private function parseWhere($whereClause) {
         $conditions = [];
         
-        // 간단한 등호 조건 파싱 (field = value)
-        if (preg_match_all('/(\w+)\s*=\s*([^\s]+)/', $whereClause, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
+        // ? 플레이스홀더가 있는 경우 params에서 가져오기
+        if (strpos($whereClause, '?') !== false && !empty($this->params)) {
+            // field = ? 형식 파싱
+            if (preg_match('/(\w+)\s*=\s*\?/', $whereClause, $match)) {
                 $field = trim($match[1]);
-                $value = trim($match[2], "'\"");
-                $conditions[$field] = $value;
+                $value = $this->params[0] ?? null;
+                if ($value !== null) {
+                    $conditions[$field] = $value;
+                }
+            }
+        } else {
+            // 간단한 등호 조건 파싱 (field = value)
+            if (preg_match_all('/(\w+)\s*=\s*([^\s]+)/', $whereClause, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    $field = trim($match[1]);
+                    $value = trim($match[2], "'\"");
+                    $conditions[$field] = $value;
+                }
             }
         }
         
