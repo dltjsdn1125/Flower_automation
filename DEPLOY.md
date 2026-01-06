@@ -22,43 +22,39 @@ git branch -M main
 git push -u origin main
 ```
 
-## Vercel 배포
+## Railway 배포 (권장)
 
-### 1. Vercel 계정 생성 및 로그인
+Railway는 PHP를 완전히 지원하며 설정이 간단합니다.
 
-1. [Vercel](https://vercel.com)에 접속
+### 1. Railway 계정 생성 및 로그인
+
+1. [Railway](https://railway.app)에 접속
 2. GitHub 계정으로 로그인
 
 ### 2. 프로젝트 배포
 
-1. Vercel 대시보드에서 "Add New Project" 클릭
-2. GitHub 저장소 선택
-3. 프로젝트 설정:
-   - **Framework Preset**: Other
-   - **Root Directory**: `./` (기본값)
-   - **Build Command**: (비워둠)
-   - **Output Directory**: (비워둠)
-4. 환경 변수 추가:
+1. Railway 대시보드에서 "New Project" 클릭
+2. "Deploy from GitHub repo" 선택
+3. `dltjsdn1125/Flower_automation` 저장소 선택
+4. Railway가 자동으로 PHP를 감지하고 배포 시작
+5. 환경 변수 추가 (Settings > Variables):
    - `SUPABASE_URL`: `https://jnpxwcmshukhkxdzicwv.supabase.co`
    - `SUPABASE_KEY`: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpucHh3Y21zaHVraGt4ZHppY3d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTQ0NzEsImV4cCI6MjA4Mjc5MDQ3MX0.C7ZXSR7t15qGShP8FhHlw0r7pLMYSDrmrR7ubb7ofOA`
-5. "Deploy" 클릭
 
 ### 3. 배포 확인
 
-- 배포가 완료되면 Vercel이 제공하는 URL로 접속
-- 예: `https://your-project.vercel.app`
+- 배포가 완료되면 Railway가 제공하는 URL로 접속
+- 예: `https://your-project.up.railway.app`
 
-## 주의사항
+## Vercel 배포 (PHP 미지원)
 
-### Vercel PHP 지원
+**참고**: Vercel은 PHP를 네이티브로 지원하지 않습니다. PHP 애플리케이션은 Railway나 Render를 사용하는 것을 권장합니다.
 
-Vercel은 PHP를 제한적으로 지원합니다. PHP 애플리케이션의 경우:
+### 대안 호스팅 서비스
 
-1. **@vercel/php** 런타임 사용 (vercel.json에 이미 설정됨)
-2. 또는 다른 호스팅 서비스 고려:
-   - **Railway**: PHP 완전 지원
-   - **Render**: PHP 지원
-   - **Heroku**: PHP 지원
+1. **Railway** (권장): PHP 완전 지원, 무료 티어 제공
+2. **Render**: PHP 지원, 무료 티어 제공
+3. **Heroku**: PHP 지원 (유료)
 
 ### Supabase 쿼리 변환
 
