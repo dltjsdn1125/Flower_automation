@@ -28,9 +28,6 @@ include __DIR__ . '/includes/header.php';
 
 <header class="flex items-center justify-between whitespace-nowrap bg-white/30 backdrop-blur-md border-b border-white/40 px-8 py-5 sticky top-0 z-20">
 <div class="flex items-center gap-4">
-<button class="md:hidden text-slate-800" onclick="history.back()">
-<span class="material-symbols-outlined">arrow_back</span>
-</button>
 <div>
 <h2 class="text-slate-800 text-2xl font-bold leading-tight tracking-tight">기본코드 관리</h2>
 <p class="text-slate-500 text-sm font-medium">발주하기 필드별 목록 관리</p>
@@ -45,7 +42,7 @@ include __DIR__ . '/includes/header.php';
 <div class="flex flex-wrap gap-2">
 <?php foreach ($tabs as $tabKey => $tabName): ?>
 <button onclick="switchTab('<?php echo $tabKey; ?>')" 
-    class="px-4 py-2 rounded-xl font-medium transition-all <?php echo $currentTab === $tabKey ? 'bg-blue-600 text-white' : 'bg-white/50 text-slate-700 hover:bg-white'; ?>">
+    class="px-4 py-2 rounded-xl font-medium transition-all <?php echo $currentTab === $tabKey ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm' : 'bg-white/50 text-slate-700 hover:bg-white'; ?>">
 <?php echo h($tabName); ?>
 </button>
 <?php endforeach; ?>
@@ -56,7 +53,7 @@ include __DIR__ . '/includes/header.php';
 <div class="glass-panel rounded-2xl p-6 md:p-8">
 <div class="flex justify-between items-center mb-6">
 <h3 class="text-slate-800 text-xl font-bold"><?php echo h($tabs[$currentTab] ?? '목록 관리'); ?></h3>
-<button onclick="openAddModal()" class="px-4 py-2 bg-black text-white font-bold rounded-xl hover:bg-slate-800 transition-all text-sm">
+<button onclick="openAddModal()" class="px-4 py-2 bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-sm">
 <span class="material-symbols-outlined align-middle text-sm">add</span> 추가
 </button>
 </div>
@@ -88,10 +85,10 @@ include __DIR__ . '/includes/header.php';
 <input type="number" id="itemDisplayOrder" name="display_order" value="0" min="0" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
 </div>
 <div class="flex gap-3">
-<button type="submit" class="flex-1 px-4 py-2.5 bg-black text-white font-bold rounded-xl hover:bg-slate-800 transition-all">
+<button type="submit" class="flex-1 px-4 py-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all">
 저장
 </button>
-<button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 transition-all">
+<button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all">
 취소
 </button>
 </div>
@@ -137,11 +134,11 @@ async function loadList() {
                     </div>
                     <div class="flex gap-2">
                         <button onclick="editItem(${item.id}, '${escapeHtml(item.name)}', ${item.display_order || 0})" 
-                            class="px-3 py-1.5 bg-black text-white text-xs rounded-lg hover:bg-slate-800 transition-all font-medium">
+                            class="px-3 py-1.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-xs rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all font-medium">
                             수정
                         </button>
                         <button onclick="deleteItem(${item.id})" 
-                            class="px-3 py-1.5 bg-black text-white text-xs rounded-lg hover:bg-slate-800 transition-all font-medium">
+                            class="px-3 py-1.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-xs rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all font-medium">
                             삭제
                         </button>
                     </div>

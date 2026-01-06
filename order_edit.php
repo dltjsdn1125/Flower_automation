@@ -97,9 +97,6 @@ include __DIR__ . '/includes/header.php';
 
 <header class="flex items-center justify-between whitespace-nowrap bg-white/30 backdrop-blur-md border-b border-white/40 px-8 py-5 sticky top-0 z-20">
 <div class="flex items-center gap-4">
-<button class="md:hidden text-slate-800" onclick="history.back()">
-<span class="material-symbols-outlined">arrow_back</span>
-</button>
 <div>
 <h2 class="text-slate-800 text-2xl font-bold leading-tight tracking-tight">발주수정</h2>
 <p class="text-slate-500 text-sm font-medium">주문서 수정 및 관리</p>
@@ -136,12 +133,32 @@ include __DIR__ . '/includes/header.php';
 </form>
 </div>
 
+<!-- 일괄 삭제 도구 -->
+<div class="glass-panel rounded-2xl p-4 mb-6" id="bulkActions" style="display: none;">
+<div class="flex items-center justify-between flex-wrap gap-4">
+<div class="flex items-center gap-4">
+<span class="text-sm font-medium text-slate-700">
+<span id="selectedCount">0</span>개 선택됨
+</span>
+<button onclick="deleteSelectedOrders()" class="px-4 py-2 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all text-sm">
+일괄 삭제
+</button>
+<button onclick="clearSelection()" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 transition-all text-sm">
+선택 해제
+</button>
+</div>
+</div>
+</div>
+
 <!-- 주문 목록 -->
 <div class="glass-panel rounded-2xl overflow-hidden">
 <div class="overflow-x-auto overscroll-x-contain">
 <table class="w-full min-w-[800px]">
 <thead class="bg-white/50 border-b border-white/60 sticky top-0 z-10">
 <tr>
+<th class="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-700 uppercase whitespace-nowrap">
+<input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+</th>
 <th class="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-700 uppercase whitespace-nowrap">주문번호</th>
 <th class="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-700 uppercase whitespace-nowrap">주문일</th>
 <th class="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-700 uppercase whitespace-nowrap">판매처</th>
@@ -155,13 +172,16 @@ include __DIR__ . '/includes/header.php';
 <tbody class="divide-y divide-white/30">
 <?php if (empty($orders)): ?>
 <tr>
-<td colspan="8" class="px-6 py-12 text-center text-slate-500">
+<td colspan="9" class="px-6 py-12 text-center text-slate-500">
 주문 내역이 없습니다.
 </td>
 </tr>
 <?php else: ?>
 <?php foreach ($orders as $order): ?>
 <tr class="hover:bg-white/30 transition-colors">
+<td class="px-4 md:px-6 py-3 md:py-4">
+<input type="checkbox" class="order-checkbox w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" value="<?php echo $order['id']; ?>" onchange="updateSelection()">
+</td>
 <td class="px-4 md:px-6 py-3 md:py-4">
 <span class="font-bold text-slate-800 text-sm"><?php echo h($order['order_number']); ?></span>
 </td>
@@ -175,17 +195,7 @@ include __DIR__ . '/includes/header.php';
 <?php echo h($order['flower_shop_name'] ?? '-'); ?>
 </td>
 <td class="px-4 md:px-6 py-3 md:py-4">
-<?php
-$statusColors = [
-    '신규' => 'bg-blue-100 text-blue-700',
-    '발주완료' => 'bg-green-100 text-green-700',
-    '배송중' => 'bg-yellow-100 text-yellow-700',
-    '배송완료' => 'bg-purple-100 text-purple-700',
-    '취소' => 'bg-red-100 text-red-700'
-];
-$color = $statusColors[$order['status']] ?? 'bg-slate-100 text-slate-700';
-?>
-<span class="px-2 md:px-3 py-1 rounded-full text-xs font-bold <?php echo $color; ?> whitespace-nowrap">
+<span class="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-br from-blue-600 to-indigo-600 text-white whitespace-nowrap shadow-sm">
 <?php echo h($order['status']); ?>
 </span>
 </td>
@@ -198,11 +208,11 @@ $color = $statusColors[$order['status']] ?? 'bg-slate-100 text-slate-700';
 <td class="px-4 md:px-6 py-3 md:py-4">
 <div class="flex gap-1 md:gap-2">
 <button onclick="editOrder(<?php echo $order['id']; ?>)" 
-    class="px-3 py-1 bg-black text-white text-xs rounded-lg hover:bg-slate-800 transition-colors font-medium">
+    class="px-3 py-1 bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-xs rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all font-medium">
 수정
 </button>
 <button onclick="deleteOrder(<?php echo $order['id']; ?>)" 
-    class="px-3 py-1 bg-black text-white text-xs rounded-lg hover:bg-slate-800 transition-colors font-medium">
+    class="px-3 py-1 bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-xs rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all font-medium">
 삭제
 </button>
 </div>
@@ -263,17 +273,100 @@ function deleteOrder(id) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('삭제되었습니다.');
-            location.reload();
+            showNotification('삭제되었습니다.', 'success');
+            setTimeout(() => location.reload(), 1000);
         } else {
-            alert('오류: ' + data.message);
+            showNotification('오류: ' + data.message, 'error');
         }
     })
     .catch(error => {
-        alert('오류가 발생했습니다.');
+        showNotification('오류가 발생했습니다.', 'error');
         console.error(error);
     });
 }
+
+// 체크박스 선택 관리
+function updateSelection() {
+    const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+    const count = checkboxes.length;
+    const selectedCount = document.getElementById('selectedCount');
+    const bulkActions = document.getElementById('bulkActions');
+    
+    if (selectedCount) {
+        selectedCount.textContent = count;
+    }
+    
+    if (bulkActions) {
+        bulkActions.style.display = count > 0 ? 'block' : 'none';
+    }
+    
+    // 전체 선택 체크박스 상태 업데이트
+    const selectAll = document.getElementById('selectAll');
+    const allCheckboxes = document.querySelectorAll('.order-checkbox');
+    if (selectAll && allCheckboxes.length > 0) {
+        selectAll.checked = count === allCheckboxes.length;
+        selectAll.indeterminate = count > 0 && count < allCheckboxes.length;
+    }
+}
+
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.order-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateSelection();
+}
+
+function clearSelection() {
+    const checkboxes = document.querySelectorAll('.order-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    }
+    updateSelection();
+}
+
+// 선택된 주문 일괄 삭제
+async function deleteSelectedOrders() {
+    const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+    
+    if (checkboxes.length === 0) {
+        alert('선택된 주문이 없습니다.');
+        return;
+    }
+    
+    const orderIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    if (!confirm(`선택한 ${orderIds.length}개의 주문을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+        return;
+    }
+    
+    // 재확인
+    if (!confirm('정말로 삭제하시겠습니까?')) {
+        return;
+    }
+    
+    try {
+        const result = await apiCall('/api/orders_bulk_delete.php', 'POST', {
+            order_ids: orderIds
+        });
+        
+        if (result) {
+            showNotification(result.message || '주문이 삭제되었습니다.', 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('삭제 중 오류가 발생했습니다.', 'error');
+    }
+}
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelection();
+});
 </script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

@@ -87,7 +87,10 @@
 <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/30 rounded-full blur-[100px] pointer-events-none z-0"></div>
 <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-200/30 rounded-full blur-[100px] pointer-events-none z-0"></div>
 <div class="flex h-screen w-full relative z-10">
-<aside class="flex w-72 flex-col glass-nav hidden md:flex z-30">
+<!-- 모바일 오버레이 (사이드바 열릴 때 배경) -->
+<div id="mobileOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden hidden transition-opacity" onclick="toggleSidebar()"></div>
+<!-- 사이드바 -->
+<aside id="sidebar" class="fixed md:static inset-y-0 left-0 flex w-72 flex-col glass-nav z-50 md:z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
 <div class="flex h-full flex-col justify-between p-6">
 <div class="flex flex-col gap-6">
 <div class="flex items-center gap-3 px-2 py-2">
@@ -149,3 +152,50 @@
 </div>
 </aside>
 <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+<!-- 모바일 메뉴 버튼 -->
+<button id="mobileMenuButton" onclick="toggleSidebar()" class="fixed top-4 left-4 z-50 md:hidden p-2 bg-white/80 backdrop-blur-md rounded-xl shadow-lg text-slate-800 hover:bg-white transition-all">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<script>
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    
+    if (sidebar && overlay) {
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+        
+        if (isOpen) {
+            // 닫기
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        } else {
+            // 열기
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+    }
+}
+
+// 모바일에서 링크 클릭 시 사이드바 닫기
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarLinks = document.querySelectorAll('#sidebar nav a');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        });
+    });
+    
+    // 화면 크기 변경 시 데스크톱에서는 항상 사이드바 표시
+    window.addEventListener('resize', function() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+        
+        if (window.innerWidth >= 768) {
+            if (sidebar) sidebar.classList.remove('-translate-x-full');
+            if (overlay) overlay.classList.add('hidden');
+        }
+    });
+});
+</script>

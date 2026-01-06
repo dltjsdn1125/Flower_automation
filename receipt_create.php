@@ -11,9 +11,6 @@ include __DIR__ . '/includes/header.php';
 
 <header class="flex items-center justify-between whitespace-nowrap bg-white/30 backdrop-blur-md border-b border-white/40 px-8 py-5 sticky top-0 z-20">
 <div class="flex items-center gap-4">
-<button class="md:hidden text-slate-800" onclick="history.back()">
-<span class="material-symbols-outlined">arrow_back</span>
-</button>
 <div>
 <h2 class="text-slate-800 text-2xl font-bold leading-tight tracking-tight">인수증 복수 생성</h2>
 <p class="text-slate-500 text-sm font-medium">동일한 정보로 여러 인수증을 한번에 생성</p>

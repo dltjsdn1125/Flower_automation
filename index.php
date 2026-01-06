@@ -7,88 +7,54 @@ $pageTitle = '발주 현황';
 // 통계 데이터 조회 (최적화: 단일 쿼리로 통합)
 $db = getDB();
 
-// 데이터베이스 타입 확인 (캐싱으로 성능 개선)
-static $isSqlite = null;
-if ($isSqlite === null) {
-    $driverName = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
-    $isSqlite = ($driverName === 'sqlite');
-}
+// 데이터베이스 타입 확인 제거 (Supabase만 사용하므로 불필요)
 
-// 통계 데이터를 한 번에 조회 (성능 최적화)
-if ($isSqlite) {
-    // SQLite: 통계 쿼리 최적화
-    $today = date('Y-m-d');
-    $stmt = $db->prepare("SELECT 
-        COUNT(*) as daily_orders,
-        SUM(CASE WHEN status IN ('발주완료', '배송완료') THEN 1 ELSE 0 END) as completed_orders,
-        SUM(CASE WHEN status = '신규' THEN 1 ELSE 0 END) as pending_orders
-        FROM orders WHERE date(order_date) = ?");
-    $stmt->execute([$today]);
-    $stats = $stmt->fetch();
-    $dailyOrders = $stats['daily_orders'] ?? 0;
-    $completedOrders = $stats['completed_orders'] ?? 0;
-    $pendingOrders = $stats['pending_orders'] ?? 0;
-    
-    // 배송 완료율 (7일)
-    $stmt = $db->query("SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN status = '배송완료' THEN 1 ELSE 0 END) as completed
-        FROM orders 
-        WHERE date(order_date) >= date('now', '-7 days')");
-    $deliveryStats = $stmt->fetch();
-    $deliveryRate = $deliveryStats['total'] > 0 ? round(($deliveryStats['completed'] / $deliveryStats['total']) * 100, 1) : 0;
-    
-    // 일일 주문 처리량
-    $stmt = $db->query("SELECT 
-        CAST(strftime('%H', created_at) AS INTEGER) as hour,
-        COUNT(*) as count
-        FROM orders 
-        WHERE date(created_at) = date('now')
-        GROUP BY strftime('%H', created_at)
-        ORDER BY hour");
-    $hourlyData = $stmt->fetchAll();
-} else {
-    // MySQL: 통계 쿼리 최적화
-    $stmt = $db->query("SELECT 
-        COUNT(*) as daily_orders,
-        SUM(CASE WHEN status IN ('발주완료', '배송완료') THEN 1 ELSE 0 END) as completed_orders,
-        SUM(CASE WHEN status = '신규' THEN 1 ELSE 0 END) as pending_orders
-        FROM orders WHERE DATE(order_date) = CURDATE()");
-    $stats = $stmt->fetch();
-    $dailyOrders = $stats['daily_orders'] ?? 0;
-    $completedOrders = $stats['completed_orders'] ?? 0;
-    $pendingOrders = $stats['pending_orders'] ?? 0;
-    
-    // 배송 완료율 (7일)
-    $stmt = $db->query("SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN status = '배송완료' THEN 1 ELSE 0 END) as completed
-        FROM orders 
-        WHERE DATE(order_date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)");
-    $deliveryStats = $stmt->fetch();
-    $deliveryRate = $deliveryStats['total'] > 0 ? round(($deliveryStats['completed'] / $deliveryStats['total']) * 100, 1) : 0;
-    
-    // 일일 주문 처리량
-    $stmt = $db->query("SELECT 
-        HOUR(created_at) as hour,
-        COUNT(*) as count
-        FROM orders 
-        WHERE DATE(created_at) = CURDATE()
-        GROUP BY HOUR(created_at)
-        ORDER BY hour");
-    $hourlyData = $stmt->fetchAll();
-}
+// 통계 데이터를 한 번에 조회 (성능 최적화: Supabase는 집계 함수를 직접 지원)
+$today = date('Y-m-d');
+$todayStart = $today . ' 00:00:00';
+$todayEnd = $today . ' 23:59:59';
+
+// 오늘 주문 통계 (단일 쿼리로 최적화)
+$stmt = $db->prepare("SELECT 
+    COUNT(*) as daily_orders,
+    SUM(CASE WHEN status IN ('발주완료', '배송완료') THEN 1 ELSE 0 END) as completed_orders,
+    SUM(CASE WHEN status = '신규' THEN 1 ELSE 0 END) as pending_orders
+    FROM orders WHERE order_date >= ? AND order_date <= ?");
+$stmt->execute([$todayStart, $todayEnd]);
+$stats = $stmt->fetch();
+$dailyOrders = (int)($stats['daily_orders'] ?? 0);
+$completedOrders = (int)($stats['completed_orders'] ?? 0);
+$pendingOrders = (int)($stats['pending_orders'] ?? 0);
+
+// 배송 완료율 (7일) - 단일 쿼리로 최적화
+$sevenDaysAgo = date('Y-m-d', strtotime('-7 days')) . ' 00:00:00';
+$stmt = $db->prepare("SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN status = '배송완료' THEN 1 ELSE 0 END) as completed
+    FROM orders 
+    WHERE order_date >= ?");
+$stmt->execute([$sevenDaysAgo]);
+$deliveryStats = $stmt->fetch();
+$deliveryRate = $deliveryStats['total'] > 0 ? round((($deliveryStats['completed'] ?? 0) / $deliveryStats['total']) * 100, 1) : 0;
+
+// 일일 주문 처리량 (시간대별) - 단일 쿼리로 최적화
+$stmt = $db->prepare("SELECT 
+    EXTRACT(HOUR FROM created_at) as hour,
+    COUNT(*) as count
+    FROM orders 
+    WHERE DATE(created_at) = ?
+    GROUP BY EXTRACT(HOUR FROM created_at)
+    ORDER BY hour");
+$stmt->execute([$today]);
+$hourlyData = $stmt->fetchAll();
 
 // 전일 대비 증가율 계산 (일일 주문 건수)
 $yesterday = date('Y-m-d', strtotime('-1 day'));
-if ($isSqlite) {
-    $stmt = $db->prepare("SELECT COUNT(*) as count FROM orders WHERE date(order_date) = ?");
-    $stmt->execute([$yesterday]);
-} else {
-    $stmt = $db->prepare("SELECT COUNT(*) as count FROM orders WHERE DATE(order_date) = ?");
-    $stmt->execute([$yesterday]);
-}
-$yesterdayOrders = $stmt->fetch()['count'] ?? 0;
+$yesterdayStart = $yesterday . ' 00:00:00';
+$yesterdayEnd = $yesterday . ' 23:59:59';
+$stmt = $db->prepare("SELECT COUNT(*) as count FROM orders WHERE order_date >= ? AND order_date <= ?");
+$stmt->execute([$yesterdayStart, $yesterdayEnd]);
+$yesterdayOrders = (int)($stmt->fetch()['count'] ?? 0);
 $orderTrend = 0;
 if ($yesterdayOrders > 0) {
     $orderTrend = round((($dailyOrders - $yesterdayOrders) / $yesterdayOrders) * 100, 1);
@@ -99,25 +65,47 @@ if ($yesterdayOrders > 0) {
 // 발주 완료율 계산
 $completionRate = $dailyOrders > 0 ? round(($completedOrders / $dailyOrders) * 100, 1) : 0;
 
-// 최근 주문 내역 (인덱스 활용, 필요한 컬럼만 선택)
-$stmt = $db->prepare("SELECT o.id, o.order_number, o.plant_type, o.pot_type, o.created_at,
-    sc.name as sales_channel_name, fs.name as flower_shop_name 
-    FROM orders o 
-    LEFT JOIN sales_channels sc ON o.sales_channel_id = sc.id 
-    LEFT JOIN flower_shops fs ON o.flower_shop_id = fs.id 
-    ORDER BY o.created_at DESC 
+// 최근 주문 내역 (JOIN 제거: PostgREST는 JOIN을 직접 지원하지 않음)
+$stmt = $db->prepare("SELECT id, order_number, plant_type, pot_type, created_at,
+    sales_channel_id, flower_shop_id
+    FROM orders 
+    ORDER BY created_at DESC 
     LIMIT 5");
 $stmt->execute();
 $recentOrders = $stmt->fetchAll();
+
+// 관련 데이터 조회 (별도 쿼리로 조회)
+$recentSalesChannelIds = array_unique(array_filter(array_column($recentOrders, 'sales_channel_id')));
+$recentFlowerShopIds = array_unique(array_filter(array_column($recentOrders, 'flower_shop_id')));
+
+$recentSalesChannels = [];
+if (!empty($recentSalesChannelIds)) {
+    $placeholders = implode(',', array_fill(0, count($recentSalesChannelIds), '?'));
+    $scStmt = $db->prepare("SELECT id, name FROM sales_channels WHERE id IN ($placeholders)");
+    $scStmt->execute($recentSalesChannelIds);
+    $recentSalesChannels = array_column($scStmt->fetchAll(), 'name', 'id');
+}
+
+$recentFlowerShops = [];
+if (!empty($recentFlowerShopIds)) {
+    $placeholders = implode(',', array_fill(0, count($recentFlowerShopIds), '?'));
+    $fsStmt = $db->prepare("SELECT id, name FROM flower_shops WHERE id IN ($placeholders)");
+    $fsStmt->execute($recentFlowerShopIds);
+    $recentFlowerShops = array_column($fsStmt->fetchAll(), 'name', 'id');
+}
+
+// 주문 목록에 관련 데이터 추가
+foreach ($recentOrders as &$order) {
+    $order['sales_channel_name'] = $recentSalesChannels[$order['sales_channel_id']] ?? '-';
+    $order['flower_shop_name'] = $recentFlowerShops[$order['flower_shop_id']] ?? '-';
+}
+unset($order);
 
 include __DIR__ . '/includes/header.php';
 ?>
 
 <header class="flex items-center justify-between whitespace-nowrap bg-white/30 backdrop-blur-md border-b border-white/40 px-8 py-5 sticky top-0 z-20">
 <div class="flex items-center gap-4">
-<button class="md:hidden text-slate-800">
-<span class="material-symbols-outlined">menu</span>
-</button>
 <div>
 <h2 class="text-slate-800 text-2xl font-bold leading-tight tracking-tight">발주 현황</h2>
 <p class="text-slate-500 text-sm font-medium">주문서 및 발주 현황 모니터링</p>
@@ -194,7 +182,7 @@ include __DIR__ . '/includes/header.php';
 
 <div class="glass-panel rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300 group relative overflow-hidden">
 <div class="absolute -right-4 -top-4 p-3 opacity-5">
-<span class="material-symbols-outlined text-blue-600 text-9xl">schedule</span>
+<span class="material-symbols-outlined text-indigo-600 text-9xl">schedule</span>
 </div>
 <div class="flex justify-between items-start relative z-10">
 <div class="rounded-2xl size-10 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
@@ -271,18 +259,18 @@ $areaPath .= " V {$chartHeight} H 0 Z";
 <line stroke="#cbd5e1" stroke-dasharray="4 4" x1="0" x2="1000" y1="75" y2="75"></line>
 <defs>
 <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"></stop>
-<stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
+<stop offset="0%" stop-color="#84cc16" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#65a30d" stop-opacity="0"></stop>
 </linearGradient>
 </defs>
 <!-- 영역 채우기 -->
 <path d="<?php echo $areaPath; ?>" fill="url(#chartGradient)"></path>
 <!-- 라인 -->
-<path d="<?php echo $pathData; ?>" fill="none" stroke="#000000" stroke-width="3"></path>
+<path d="<?php echo $pathData; ?>" fill="none" stroke="#84cc16" stroke-width="3"></path>
 <!-- 데이터 포인트 -->
 <?php foreach ($points as $point): ?>
 <?php if ($point['value'] > 0): ?>
-<circle cx="<?php echo $point['x']; ?>" cy="<?php echo $point['y']; ?>" fill="white" r="4" stroke="#000000" stroke-width="2"></circle>
+<circle cx="<?php echo $point['x']; ?>" cy="<?php echo $point['y']; ?>" fill="white" r="4" stroke="#84cc16" stroke-width="2"></circle>
 <?php endif; ?>
 <?php endforeach; ?>
 </svg>
@@ -364,8 +352,12 @@ $areaPath .= " V {$chartHeight} H 0 Z";
 <div class="flex flex-col">
 <p class="text-slate-800 text-sm font-bold">인수증 생성 시스템</p>
 <?php
-$stmt = $db->query("SELECT COUNT(*) as count FROM receipt_templates");
-$templateCount = $stmt->fetch()['count'];
+// 템플릿 개수 조회 (캐싱으로 성능 개선)
+static $templateCount = null;
+if ($templateCount === null) {
+    $stmt = $db->query("SELECT COUNT(*) as count FROM receipt_templates");
+    $templateCount = (int)($stmt->fetch()['count'] ?? 0);
+}
 ?>
 <p class="text-slate-500 text-xs mt-0.5">즐겨찾기 템플릿: <?php echo $templateCount; ?>개</p>
 </div>

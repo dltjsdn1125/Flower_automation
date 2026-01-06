@@ -39,9 +39,6 @@ include __DIR__ . '/includes/header.php';
 
 <header class="flex items-center justify-between whitespace-nowrap bg-white/30 backdrop-blur-md border-b border-white/40 px-8 py-5 sticky top-0 z-20">
 <div class="flex items-center gap-4">
-<button class="md:hidden text-slate-800" onclick="history.back()">
-<span class="material-symbols-outlined">arrow_back</span>
-</button>
 <div>
 <h2 class="text-slate-800 text-2xl font-bold leading-tight tracking-tight">템플릿 관리</h2>
 <p class="text-slate-500 text-sm font-medium">즐겨찾기 템플릿 생성 및 관리 (최대 10개)</p>
@@ -72,10 +69,10 @@ include __DIR__ . '/includes/header.php';
 <div class="flex justify-between items-start mb-4">
 <h4 class="text-lg font-bold text-slate-800"><?php echo h($template['name']); ?></h4>
 <div class="flex gap-2">
-<button onclick="editTemplate(<?php echo $template['id']; ?>)" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-slate-800 transition-all text-sm font-medium">
+<button onclick="editTemplate(<?php echo $template['id']; ?>)" class="px-4 py-2 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all text-sm font-medium">
 수정
 </button>
-<button onclick="deleteTemplate(<?php echo $template['id']; ?>)" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-slate-800 transition-all text-sm font-medium">
+<button onclick="deleteTemplate(<?php echo $template['id']; ?>)" class="px-4 py-2 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all text-sm font-medium">
 삭제
 </button>
 </div>
@@ -204,10 +201,10 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <div class="flex gap-4 pt-6 border-t border-slate-200">
-<button type="submit" class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all">
+<button type="submit" class="flex-1 py-3 bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all">
 저장
 </button>
-<button type="button" onclick="closeTemplateModal()" class="px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-all">
+<button type="button" onclick="closeTemplateModal()" class="px-6 py-3 bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all">
 취소
 </button>
 </div>
