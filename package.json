@@ -1,0 +1,24 @@
+{
+  "name": "design",
+  "version": "1.0.0",
+  "description": "꽃 배송 발주 및 인수증 관리 시스템",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dltjsdn1125/Flower_automation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dltjsdn1125/Flower_automation/issues"
+  },
+  "homepage": "https://github.com/dltjsdn1125/Flower_automation#readme",
+  "dependencies": {
+    "playwright": "^1.57.0"
+  }
+}

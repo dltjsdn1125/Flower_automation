@@ -4,12 +4,11 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title><?php echo isset($pageTitle) ? h($pageTitle) : '발주 관리 시스템'; ?></title>
+    <!-- 폰트 로딩 최적화: preconnect만 사용, 실제 로딩은 지연 -->
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet"/></noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <!-- 페이지 prefetch 제거: 과도한 prefetch로 인한 성능 저하 방지 -->
     <script id="tailwind-config">
         // Tailwind CSS가 로드된 후 실행되도록 설정
@@ -101,35 +100,35 @@
 </div>
 </div>
 <nav class="flex flex-col gap-2">
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/index.php" rel="prefetch">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/index.php">
 <span class="material-symbols-outlined">dashboard</span>
 <p class="text-sm font-bold">대시보드</p>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'order_create.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/order_create.php" rel="prefetch">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'order_create.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/order_create.php">
 <span class="material-symbols-outlined">shopping_cart</span>
 <p class="text-sm font-medium">발주하기</p>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'order_edit.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/order_edit.php" rel="prefetch">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'order_edit.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/order_edit.php">
 <span class="material-symbols-outlined">edit</span>
 <p class="text-sm font-medium">발주수정</p>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'customer.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/customer.php" rel="prefetch">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'customer.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/customer.php">
 <span class="material-symbols-outlined">person</span>
 <p class="text-sm font-medium">고객정보</p>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'receipt_create.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/receipt_create.php" rel="prefetch">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'receipt_create.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/receipt_create.php">
 <span class="material-symbols-outlined">receipt_long</span>
 <p class="text-sm font-medium">인수증 복수생성</p>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'receipt_list.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/receipt_list.php" rel="prefetch">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'receipt_list.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/receipt_list.php">
 <span class="material-symbols-outlined">list</span>
 <p class="text-sm font-medium">인수증 목록</p>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'template.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/template.php" rel="prefetch">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'template.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/template.php">
 <span class="material-symbols-outlined">bookmark</span>
 <p class="text-sm font-medium">템플릿 관리</p>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/settings.php" rel="prefetch">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'bg-white/80 shadow-sm text-blue-700 border border-white/60' : 'hover:bg-white/50 text-slate-500 hover:text-slate-800'; ?> transition-all duration-200" href="/settings.php">
 <span class="material-symbols-outlined">settings</span>
 <p class="text-sm font-medium">기본코드 관리</p>
 </a>

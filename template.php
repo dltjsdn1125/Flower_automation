@@ -11,6 +11,29 @@ $stmt = $db->prepare("SELECT * FROM receipt_templates WHERE created_by = ? ORDER
 $stmt->execute([$_SESSION['admin_id']]);
 $templates = $stmt->fetchAll();
 
+// 각 필드별 목록 조회 (order_create.php와 동일하게)
+$listFields = [
+    'delivery_methods' => 'delivery_method',
+    'pot_sizes' => 'pot_size',
+    'pot_types' => 'pot_type',
+    'pot_colors' => 'pot_color',
+    'plant_sizes' => 'plant_size',
+    'plant_types' => 'plant_type',
+    'ribbons' => 'ribbon',
+    'policies' => 'policy',
+    'accessories' => 'accessories'
+];
+
+$listData = [];
+foreach ($listFields as $table => $field) {
+    try {
+        $stmt = $db->query("SELECT id, name FROM {$table} ORDER BY display_order ASC, name ASC");
+        $listData[$field] = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        $listData[$field] = [];
+    }
+}
+
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -98,85 +121,85 @@ include __DIR__ . '/includes/header.php';
 <label class="block text-sm font-medium text-slate-700 mb-2">배송방법</label>
 <select name="delivery_method" id="template_delivery_method" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
 <option value="">선택하세요</option>
-<option value="특송">특송</option>
-<option value="일반배송">일반배송</option>
-<option value="직접배송">직접배송</option>
-<option value="특급배송">특급배송</option>
+<?php foreach ($listData['delivery_method'] ?? [] as $item): ?>
+<option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
+<?php endforeach; ?>
 </select>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-2">화분사이즈</label>
-<input type="text" name="pot_size" id="template_pot_size" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<select name="pot_size" id="template_pot_size" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<option value="">선택하세요</option>
+<?php foreach ($listData['pot_size'] ?? [] as $item): ?>
+<option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
+<?php endforeach; ?>
+</select>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-2">화분종류</label>
-<input type="text" name="pot_type" id="template_pot_type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<select name="pot_type" id="template_pot_type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<option value="">선택하세요</option>
+<?php foreach ($listData['pot_type'] ?? [] as $item): ?>
+<option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
+<?php endforeach; ?>
+</select>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-2">화분색상</label>
-<input type="text" name="pot_color" id="template_pot_color" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<select name="pot_color" id="template_pot_color" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<option value="">선택하세요</option>
+<?php foreach ($listData['pot_color'] ?? [] as $item): ?>
+<option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
+<?php endforeach; ?>
+</select>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-2">식물사이즈</label>
-<input type="text" name="plant_size" id="template_plant_size" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<select name="plant_size" id="template_plant_size" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<option value="">선택하세요</option>
+<?php foreach ($listData['plant_size'] ?? [] as $item): ?>
+<option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
+<?php endforeach; ?>
+</select>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-2">식물종류</label>
-<input type="text" name="plant_type" id="template_plant_type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<select name="plant_type" id="template_plant_type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<option value="">선택하세요</option>
+<?php foreach ($listData['plant_type'] ?? [] as $item): ?>
+<option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
+<?php endforeach; ?>
+</select>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-2">리본</label>
-<input type="text" name="ribbon" id="template_ribbon" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<select name="ribbon" id="template_ribbon" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<option value="">선택하세요</option>
+<?php foreach ($listData['ribbon'] ?? [] as $item): ?>
+<option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
+<?php endforeach; ?>
+</select>
 </div>
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-2">받침</label>
-<input type="text" name="policy" id="template_policy" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<select name="policy" id="template_policy" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<option value="">선택하세요</option>
+<?php foreach ($listData['policy'] ?? [] as $item): ?>
+<option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
+<?php endforeach; ?>
+</select>
 </div>
 </div>
 
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-3">부자재 선택</label>
 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<?php foreach ($listData['accessories'] ?? [] as $item): ?>
 <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="리본(소,중)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">리본(소,중)</span>
+<input type="checkbox" name="accessories[]" value="<?php echo h($item['name']); ?>" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+<span class="text-sm text-slate-700"><?php echo h($item['name']); ?></span>
 </label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="리본(대,VIP)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">리본(대,VIP)</span>
-</label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="리본(특대)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">리본(특대)</span>
-</label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="빨강(소,중)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">빨강(소,중)</span>
-</label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="빨강(대,VIP)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">빨강(대,VIP)</span>
-</label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="빨강(특대)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">빨강(특대)</span>
-</label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="★당일★" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">★당일★</span>
-</label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="@" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">@</span>
-</label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="카드메세지" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">카드메세지</span>
-</label>
-<label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all">
-<input type="checkbox" name="accessories[]" value="베베로" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-<span class="text-sm text-slate-700">베베로</span>
-</label>
+<?php endforeach; ?>
 </div>
 </div>
 

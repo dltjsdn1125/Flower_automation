@@ -112,8 +112,8 @@ include __DIR__ . '/includes/header.php';
 </select>
 </div>
 <div>
-<label class="block text-sm font-medium text-slate-700 mb-2">구분</label>
-<select name="status" id="status" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+<label class="block text-sm font-medium text-slate-700 mb-2">주문구분</label>
+<select name="status" id="status" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
 <option value="">선택하세요</option>
 <?php foreach ($listData['status'] ?? [] as $item): ?>
 <option value="<?php echo h($item['name']); ?>"><?php echo h($item['name']); ?></option>
@@ -281,32 +281,128 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <script>
+// 템플릿으로 채워진 필드 목록 (주문구분 제외)
+const templateFields = ['delivery_method', 'pot_size', 'pot_type', 'pot_color', 'plant_size', 'plant_type', 'ribbon', 'policy'];
+
+// 필드에 템플릿 스타일 적용
+function markAsTemplateField(elementId, hasValue) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    // 기존 클래스 제거 후 새 스타일 적용
+    el.classList.remove('bg-blue-50', 'border-blue-300', 'border-slate-200');
+
+    if (hasValue) {
+        el.classList.add('bg-blue-50', 'border-blue-300');
+    } else {
+        el.classList.add('border-slate-200');
+    }
+}
+
+// 모든 템플릿 필드 스타일 초기화
+function resetTemplateFieldStyles() {
+    templateFields.forEach(field => markAsTemplateField(field, false));
+    // 부자재 체크박스 스타일 초기화
+    document.querySelectorAll('input[name="accessories[]"]').forEach(checkbox => {
+        const label = checkbox.closest('label');
+        if (label) {
+            label.classList.remove('bg-blue-50', 'border-blue-300');
+        }
+    });
+}
+
 // 템플릿 로드
 async function loadTemplate(templateId) {
     const result = await apiCall(`/api/templates.php?id=${templateId}`, 'GET');
-    
+
     if (result && result.data) {
         const template = result.data;
-        
-        // 템플릿 데이터로 폼 채우기
-        if (template.delivery_method) document.getElementById('delivery_method').value = template.delivery_method;
-        if (template.pot_size) document.getElementById('pot_size').value = template.pot_size;
-        if (template.pot_type) document.getElementById('pot_type').value = template.pot_type;
-        if (template.pot_color) document.getElementById('pot_color').value = template.pot_color;
-        if (template.plant_size) document.getElementById('plant_size').value = template.plant_size;
-        if (template.plant_type) document.getElementById('plant_type').value = template.plant_type;
-        if (template.ribbon) document.getElementById('ribbon').value = template.ribbon;
-        if (template.policy) document.getElementById('policy').value = template.policy;
-        
+
+        // 모든 템플릿 필드 스타일 초기화
+        resetTemplateFieldStyles();
+
+        // 템플릿 데이터로 폼 채우기 + 스타일 적용
+        // select 요소의 옵션을 정확히 매칭하기 위해 값 비교
+        function setSelectValue(selectId, value) {
+            const select = document.getElementById(selectId);
+            if (!select || !value) return false;
+            
+            // 정확한 값 매칭 시도
+            for (let option of select.options) {
+                if (option.value === value || option.text === value) {
+                    select.value = option.value;
+                    return true;
+                }
+            }
+            // 부분 매칭 시도 (대소문자 무시)
+            for (let option of select.options) {
+                if (option.value.toLowerCase() === value.toLowerCase() || 
+                    option.text.toLowerCase() === value.toLowerCase()) {
+                    select.value = option.value;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (template.delivery_method) {
+            if (setSelectValue('delivery_method', template.delivery_method)) {
+                markAsTemplateField('delivery_method', true);
+            }
+        }
+        if (template.pot_size) {
+            if (setSelectValue('pot_size', template.pot_size)) {
+                markAsTemplateField('pot_size', true);
+            }
+        }
+        if (template.pot_type) {
+            if (setSelectValue('pot_type', template.pot_type)) {
+                markAsTemplateField('pot_type', true);
+            }
+        }
+        if (template.pot_color) {
+            if (setSelectValue('pot_color', template.pot_color)) {
+                markAsTemplateField('pot_color', true);
+            }
+        }
+        if (template.plant_size) {
+            if (setSelectValue('plant_size', template.plant_size)) {
+                markAsTemplateField('plant_size', true);
+            }
+        }
+        if (template.plant_type) {
+            if (setSelectValue('plant_type', template.plant_type)) {
+                markAsTemplateField('plant_type', true);
+            }
+        }
+        if (template.ribbon) {
+            if (setSelectValue('ribbon', template.ribbon)) {
+                markAsTemplateField('ribbon', true);
+            }
+        }
+        if (template.policy) {
+            if (setSelectValue('policy', template.policy)) {
+                markAsTemplateField('policy', true);
+            }
+        }
+
         // 부자재 체크박스 처리
         if (template.accessories) {
             const accessories = template.accessories.split(',').map(a => a.trim());
             document.querySelectorAll('input[name="accessories[]"]').forEach(checkbox => {
                 checkbox.checked = accessories.includes(checkbox.value);
+                // 체크된 부자재의 부모 라벨에 스타일 적용
+                const label = checkbox.closest('label');
+                if (label) {
+                    label.classList.remove('bg-blue-50', 'border-blue-300');
+                    if (checkbox.checked) {
+                        label.classList.add('bg-blue-50', 'border-blue-300');
+                    }
+                }
             });
         }
-        
-        showNotification('템플릿이 적용되었습니다. 필요시 수정하세요.', 'success');
+
+        showNotification('템플릿 적용 완료 (파란 배경 = 템플릿 값)', 'success');
     }
 }
 
@@ -348,6 +444,8 @@ function resetForm() {
         document.getElementById('orderForm').reset();
         document.getElementById('order_date').value = '<?php echo date('Y-m-d'); ?>';
         document.getElementById('manager_name').value = '<?php echo h($_SESSION['admin_name'] ?? ''); ?>';
+        // 템플릿 스타일 초기화
+        resetTemplateFieldStyles();
     }
 }
 </script>

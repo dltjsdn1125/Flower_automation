@@ -18,46 +18,76 @@ $where = [];
 $params = [];
 
 if ($search) {
-    $where[] = "(o.order_number LIKE ? OR sc.name LIKE ? OR fs.name LIKE ?)";
+    // JOIN 제거로 인해 주문번호만 검색 (판매처/화원사는 별도 조회 후 필터링)
+    $where[] = "order_number LIKE ?";
     $searchParam = "%$search%";
-    $params[] = $searchParam;
-    $params[] = $searchParam;
     $params[] = $searchParam;
 }
 
 if ($statusFilter) {
-    $where[] = "o.status = ?";
+    $where[] = "status = ?";
     $params[] = $statusFilter;
 }
 
 $whereClause = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
 
-// 전체 개수
-$countSql = "SELECT COUNT(*) as total FROM orders o 
-    LEFT JOIN sales_channels sc ON o.sales_channel_id = sc.id 
-    LEFT JOIN flower_shops fs ON o.flower_shop_id = fs.id 
-    $whereClause";
+// 전체 개수 (JOIN 제거: PostgREST는 JOIN을 직접 지원하지 않음)
+$countSql = "SELECT COUNT(*) as total FROM orders $whereClause";
 $countStmt = $db->prepare($countSql);
 $countStmt->execute($params);
-$totalCount = $countStmt->fetch()['total'];
+$totalCountResult = $countStmt->fetch();
+$totalCount = $totalCountResult ? (int)$totalCountResult['total'] : 0;
 $totalPages = ceil($totalCount / $limit);
 
-// 주문 목록 (JOIN 최적화: 필요한 컬럼만 선택)
-$sql = "SELECT o.id, o.order_number, o.order_date, o.status, o.order_amount, o.created_at,
-    sc.name as sales_channel_name, fs.name as flower_shop_name,
-    a.name as created_by_name
-    FROM orders o 
-    LEFT JOIN sales_channels sc ON o.sales_channel_id = sc.id 
-    LEFT JOIN flower_shops fs ON o.flower_shop_id = fs.id
-    LEFT JOIN admins a ON o.created_by = a.id
+// 주문 목록 (JOIN 제거: PostgREST는 JOIN을 직접 지원하지 않으므로 메인 테이블만 조회)
+$sql = "SELECT id, order_number, order_date, status, order_amount, created_at,
+    sales_channel_id, flower_shop_id, created_by
+    FROM orders 
     $whereClause
-    ORDER BY o.created_at DESC 
+    ORDER BY created_at DESC 
     LIMIT ? OFFSET ?";
 $stmt = $db->prepare($sql);
 $params[] = $limit;
 $params[] = $offset;
 $stmt->execute($params);
 $orders = $stmt->fetchAll();
+
+// 관련 데이터 조회 (별도 쿼리로 조회)
+$salesChannelIds = array_unique(array_filter(array_column($orders, 'sales_channel_id')));
+$flowerShopIds = array_unique(array_filter(array_column($orders, 'flower_shop_id')));
+$adminIds = array_unique(array_filter(array_column($orders, 'created_by')));
+
+$salesChannels = [];
+if (!empty($salesChannelIds)) {
+    $placeholders = implode(',', array_fill(0, count($salesChannelIds), '?'));
+    $scStmt = $db->prepare("SELECT id, name FROM sales_channels WHERE id IN ($placeholders)");
+    $scStmt->execute($salesChannelIds);
+    $salesChannels = array_column($scStmt->fetchAll(), 'name', 'id');
+}
+
+$flowerShops = [];
+if (!empty($flowerShopIds)) {
+    $placeholders = implode(',', array_fill(0, count($flowerShopIds), '?'));
+    $fsStmt = $db->prepare("SELECT id, name FROM flower_shops WHERE id IN ($placeholders)");
+    $fsStmt->execute($flowerShopIds);
+    $flowerShops = array_column($fsStmt->fetchAll(), 'name', 'id');
+}
+
+$admins = [];
+if (!empty($adminIds)) {
+    $placeholders = implode(',', array_fill(0, count($adminIds), '?'));
+    $aStmt = $db->prepare("SELECT id, name FROM admins WHERE id IN ($placeholders)");
+    $aStmt->execute($adminIds);
+    $admins = array_column($aStmt->fetchAll(), 'name', 'id');
+}
+
+// 주문 목록에 관련 데이터 추가
+foreach ($orders as &$order) {
+    $order['sales_channel_name'] = $salesChannels[$order['sales_channel_id']] ?? '';
+    $order['flower_shop_name'] = $flowerShops[$order['flower_shop_id']] ?? '';
+    $order['created_by_name'] = $admins[$order['created_by']] ?? '';
+}
+unset($order);
 
 // 상태 목록
 $statusList = ['신규', '발주완료', '배송중', '배송완료', '취소'];

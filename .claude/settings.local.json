@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(php test_full.php:*)",
+      "Bash(php -m:*)",
+      "Bash(php --ini:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(php -S:*)",
+      "Bash(start http://localhost:8080)"
+    ]
+  }
+}

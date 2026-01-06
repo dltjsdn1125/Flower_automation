@@ -278,7 +278,10 @@ async function createReceipts() {
     if (result) {
         showNotification(`${count}개의 인수증이 생성되었습니다.`, 'success');
         setTimeout(() => {
-            window.location.href = '/receipt_list.php';
+            // 캐시 방지를 위해 타임스탬프 추가 및 강제 새로고침
+            const url = '/receipt_list.php?t=' + Date.now();
+            // 페이지를 완전히 새로고침하기 위해 location.replace 사용
+            window.location.replace(url);
         }, 1500);
     }
 }

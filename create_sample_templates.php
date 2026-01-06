@@ -42,15 +42,27 @@ echo "현재 템플릿 개수: {$currentCount}개\n";
 echo "추가 가능한 개수: {$remaining}개\n";
 echo "생성할 템플릿 개수: {$templatesToCreate}개\n\n";
 
-// 다양한 구성의 템플릿 데이터
+// 다양한 구성의 템플릿 데이터 (실제 DB 값에 맞춤)
 $templates = [
+    [
+        'name' => '당일 배송 장미',
+        'delivery_method' => '당일배송',
+        'pot_size' => '중형',
+        'pot_type' => '화분',
+        'pot_color' => '빨강',
+        'plant_size' => '중형(M)',
+        'plant_type' => '빨간장미',
+        'ribbon' => '리본(소,중)',
+        'policy' => '선택',
+        'accessories' => '리본(소,중), ★당일★, 카드메세지'
+    ],
     [
         'name' => '장미꽃다발',
         'delivery_method' => '특송',
-        'pot_size' => '중',
+        'pot_size' => '중형',
         'pot_type' => '화분',
         'pot_color' => '흰색',
-        'plant_size' => 'S',
+        'plant_size' => '소형(S)',
         'plant_type' => '장미',
         'ribbon' => '리본(소,중)',
         'policy' => '선택',
@@ -59,10 +71,10 @@ $templates = [
     [
         'name' => '프리미엄 난 바구니',
         'delivery_method' => '특급배송',
-        'pot_size' => '대',
+        'pot_size' => '대형',
         'pot_type' => '라탄바구니',
-        'pot_color' => '자연색',
-        'plant_size' => 'L',
+        'pot_color' => '갈색',
+        'plant_size' => '대형(L)',
         'plant_type' => '난',
         'ribbon' => '리본(대,VIP)',
         'policy' => '필수',
@@ -71,10 +83,10 @@ $templates = [
     [
         'name' => 'VIP 장미 혼합',
         'delivery_method' => '특송',
-        'pot_size' => '특대',
+        'pot_size' => '특대형',
         'pot_type' => '화분',
-        'pot_color' => '골드',
-        'plant_size' => 'XL',
+        'pot_color' => '혼합',
+        'plant_size' => '특대형(XL)',
         'plant_type' => 'S-핑크장미혼합',
         'ribbon' => '리본(특대)',
         'policy' => '필수',
@@ -83,10 +95,10 @@ $templates = [
     [
         'name' => '일반 꽃바구니',
         'delivery_method' => '일반배송',
-        'pot_size' => '소',
+        'pot_size' => '소형',
         'pot_type' => '꽃바구니',
         'pot_color' => '갈색',
-        'plant_size' => 'M',
+        'plant_size' => '중형(M)',
         'plant_type' => '꽃 바구니(공통)',
         'ribbon' => '리본(소,중)',
         'policy' => '선택',
@@ -95,22 +107,22 @@ $templates = [
     [
         'name' => '생일 축하 화분',
         'delivery_method' => '직접배송',
-        'pot_size' => '중',
+        'pot_size' => '중형',
         'pot_type' => '화분',
-        'pot_color' => '파란색',
-        'plant_size' => 'M',
+        'pot_color' => '파랑',
+        'plant_size' => '중형(M)',
         'plant_type' => '관엽식물',
-        'ribbon' => '빨강(소,중)',
+        'ribbon' => '리본(소,중)',
         'policy' => '선택',
-        'accessories' => '빨강(소,중), 카드메세지, @'
+        'accessories' => '리본(소,중), 카드메세지, @'
     ],
     [
         'name' => '결혼식 축하 화환',
         'delivery_method' => '특급배송',
-        'pot_size' => '대',
+        'pot_size' => '대형',
         'pot_type' => '화분',
         'pot_color' => '흰색',
-        'plant_size' => 'L',
+        'plant_size' => '대형(L)',
         'plant_type' => '화환',
         'ribbon' => '리본(대,VIP)',
         'policy' => '필수',
@@ -119,22 +131,22 @@ $templates = [
     [
         'name' => '장례식 화환',
         'delivery_method' => '특송',
-        'pot_size' => '대',
+        'pot_size' => '대형',
         'pot_type' => '화분',
-        'pot_color' => '검은색',
-        'plant_size' => 'L',
+        'pot_color' => '검정',
+        'plant_size' => '대형(L)',
         'plant_type' => '화환',
-        'ribbon' => '빨강(대,VIP)',
+        'ribbon' => '없음',
         'policy' => '필수',
-        'accessories' => '빨강(대,VIP), 카드메세지'
+        'accessories' => '카드메세지'
     ],
     [
         'name' => '소형 다육식물',
         'delivery_method' => '일반배송',
-        'pot_size' => '소',
+        'pot_size' => '소형',
         'pot_type' => '화분',
-        'pot_color' => '테라코타',
-        'plant_size' => 'S',
+        'pot_color' => '갈색',
+        'plant_size' => '소형(S)',
         'plant_type' => '다육식물',
         'ribbon' => '없음',
         'policy' => '없음',
@@ -143,26 +155,14 @@ $templates = [
     [
         'name' => '고급 난 화분 세트',
         'delivery_method' => '특급배송',
-        'pot_size' => '중',
+        'pot_size' => '중형',
         'pot_type' => '도자기화분',
-        'pot_color' => '청자색',
-        'plant_size' => 'M',
+        'pot_color' => '혼합',
+        'plant_size' => '중형(M)',
         'plant_type' => '난',
         'ribbon' => '리본(소,중)',
         'policy' => '선택',
         'accessories' => '리본(소,중), 카드메세지'
-    ],
-    [
-        'name' => '당일 배송 장미',
-        'delivery_method' => '특급배송',
-        'pot_size' => '중',
-        'pot_type' => '화분',
-        'pot_color' => '빨간색',
-        'plant_size' => 'M',
-        'plant_type' => '빨간장미',
-        'ribbon' => '빨강(소,중)',
-        'policy' => '선택',
-        'accessories' => '빨강(소,중), ★당일★, 카드메세지'
     ]
 ];
 

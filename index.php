@@ -124,19 +124,6 @@ include __DIR__ . '/includes/header.php';
 </div>
 </div>
 <div class="flex items-center gap-4">
-<div class="hidden md:flex items-center rounded-xl bg-white/50 h-11 w-72 px-4 border border-white/60 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
-<span class="material-symbols-outlined text-slate-400">search</span>
-<input class="bg-transparent border-none text-slate-700 text-sm w-full focus:ring-0 placeholder-slate-400 ml-2" placeholder="검색어를 입력하세요..."/>
-</div>
-<div class="flex gap-3">
-<button class="flex items-center justify-center size-11 rounded-xl bg-white/50 text-slate-600 hover:bg-white hover:text-blue-600 border border-white/60 shadow-sm transition-all relative group">
-<span class="material-symbols-outlined group-hover:scale-110 transition-transform">notifications</span>
-<span class="absolute top-3 right-3 size-2 bg-red-500 rounded-full border border-white"></span>
-</button>
-<button class="flex items-center justify-center size-11 rounded-xl bg-white/50 text-slate-600 hover:bg-white hover:text-blue-600 border border-white/60 shadow-sm transition-all group">
-<span class="material-symbols-outlined group-hover:scale-110 transition-transform">help</span>
-</button>
-</div>
 </div>
 </header>
 
@@ -144,8 +131,8 @@ include __DIR__ . '/includes/header.php';
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 <div class="glass-panel rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300 group">
 <div class="flex justify-between items-start">
-<div class="p-2 bg-blue-50 rounded-lg text-blue-600">
-<span class="material-symbols-outlined group-hover:scale-110 transition-transform">cloud_sync</span>
+<div class="rounded-2xl size-10 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+<span class="material-symbols-outlined">receipt_long</span>
 </div>
 <?php if ($orderTrend != 0): ?>
 <div class="flex items-center gap-1 <?php echo $orderTrend > 0 ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'; ?> px-2 py-1 rounded-full border">
@@ -162,8 +149,8 @@ include __DIR__ . '/includes/header.php';
 
 <div class="glass-panel rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300 group">
 <div class="flex justify-between items-start">
-<div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-<span class="material-symbols-outlined group-hover:scale-110 transition-transform">analytics</span>
+<div class="rounded-2xl size-10 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+<span class="material-symbols-outlined">task_alt</span>
 </div>
 <?php if ($completionRate > 0): ?>
 <div class="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-full border border-slate-100">
@@ -179,23 +166,23 @@ include __DIR__ . '/includes/header.php';
 
 <div class="glass-panel rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300 group">
 <div class="flex justify-between items-start">
-<div class="p-2 bg-violet-50 rounded-lg text-violet-600">
-<span class="material-symbols-outlined group-hover:scale-110 transition-transform">send</span>
+<div class="rounded-2xl size-10 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+<span class="material-symbols-outlined">local_shipping</span>
 </div>
 <?php if ($deliveryRate >= 80): ?>
-<div class="flex items-center gap-1 bg-green-50 px-2 py-1 rounded-full border border-green-100">
-<span class="material-symbols-outlined text-green-600 text-xs">check_circle</span>
-<span class="text-green-700 text-xs font-bold">정상</span>
+<div class="flex items-center gap-1 bg-black px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-white text-xs">check_circle</span>
+<span class="text-white text-xs font-bold">정상</span>
 </div>
 <?php elseif ($deliveryRate >= 50): ?>
-<div class="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-full border border-yellow-100">
-<span class="material-symbols-outlined text-yellow-600 text-xs">warning</span>
-<span class="text-yellow-700 text-xs font-bold">주의</span>
+<div class="flex items-center gap-1 bg-black px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-white text-xs">warning</span>
+<span class="text-white text-xs font-bold">주의</span>
 </div>
 <?php else: ?>
-<div class="flex items-center gap-1 bg-red-50 px-2 py-1 rounded-full border border-red-100">
-<span class="material-symbols-outlined text-red-600 text-xs">error</span>
-<span class="text-red-700 text-xs font-bold">위험</span>
+<div class="flex items-center gap-1 bg-black px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-white text-xs">error</span>
+<span class="text-white text-xs font-bold">위험</span>
 </div>
 <?php endif; ?>
 </div>
@@ -205,16 +192,16 @@ include __DIR__ . '/includes/header.php';
 </div>
 </div>
 
-<div class="glass-panel rounded-2xl p-6 border-red-100 hover:border-red-200 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+<div class="glass-panel rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300 group relative overflow-hidden">
 <div class="absolute -right-4 -top-4 p-3 opacity-5">
-<span class="material-symbols-outlined text-red-600 text-9xl">warning</span>
+<span class="material-symbols-outlined text-blue-600 text-9xl">schedule</span>
 </div>
 <div class="flex justify-between items-start relative z-10">
-<div class="p-2 bg-red-50 rounded-lg text-red-600">
-<span class="material-symbols-outlined animate-pulse">warning</span>
+<div class="rounded-2xl size-10 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+<span class="material-symbols-outlined">schedule</span>
 </div>
-<div class="flex items-center gap-1 bg-red-50 px-2 py-1 rounded-full border border-red-100">
-<span class="text-red-700 text-xs font-bold">긴급</span>
+<div class="flex items-center gap-1 bg-black px-2 py-1 rounded-full">
+<span class="text-white text-xs font-bold">긴급</span>
 </div>
 </div>
 <div class="mt-4 relative z-10">
@@ -291,11 +278,11 @@ $areaPath .= " V {$chartHeight} H 0 Z";
 <!-- 영역 채우기 -->
 <path d="<?php echo $areaPath; ?>" fill="url(#chartGradient)"></path>
 <!-- 라인 -->
-<path d="<?php echo $pathData; ?>" fill="none" stroke="#3b82f6" stroke-width="3"></path>
+<path d="<?php echo $pathData; ?>" fill="none" stroke="#000000" stroke-width="3"></path>
 <!-- 데이터 포인트 -->
 <?php foreach ($points as $point): ?>
 <?php if ($point['value'] > 0): ?>
-<circle cx="<?php echo $point['x']; ?>" cy="<?php echo $point['y']; ?>" fill="white" r="4" stroke="#3b82f6" stroke-width="2"></circle>
+<circle cx="<?php echo $point['x']; ?>" cy="<?php echo $point['y']; ?>" fill="white" r="4" stroke="#000000" stroke-width="2"></circle>
 <?php endif; ?>
 <?php endforeach; ?>
 </svg>
@@ -354,7 +341,7 @@ $areaPath .= " V {$chartHeight} H 0 Z";
 <p class="text-slate-500 text-xs mt-0.5">정상 가동 중</p>
 </div>
 </div>
-<span class="text-green-700 font-bold text-xs bg-green-100 px-2.5 py-1 rounded-md">ONLINE</span>
+<span class="text-white font-bold text-xs bg-black px-2.5 py-1 rounded-md">ONLINE</span>
 </div>
 <div class="flex justify-between items-center pb-5 border-b border-slate-100/50 last:border-0 last:pb-0">
 <div class="flex items-center gap-4">
@@ -367,7 +354,7 @@ $areaPath .= " V {$chartHeight} H 0 Z";
 <p class="text-slate-500 text-xs mt-0.5">처리율: <?php echo $deliveryRate; ?>%</p>
 </div>
 </div>
-<span class="text-green-700 font-bold text-xs bg-green-100 px-2.5 py-1 rounded-md">ONLINE</span>
+<span class="text-white font-bold text-xs bg-black px-2.5 py-1 rounded-md">ONLINE</span>
 </div>
 <div class="flex justify-between items-center pb-5 border-b border-slate-100/50 last:border-0 last:pb-0">
 <div class="flex items-center gap-4">
@@ -383,7 +370,7 @@ $templateCount = $stmt->fetch()['count'];
 <p class="text-slate-500 text-xs mt-0.5">즐겨찾기 템플릿: <?php echo $templateCount; ?>개</p>
 </div>
 </div>
-<span class="text-yellow-700 font-bold text-xs bg-yellow-100 px-2.5 py-1 rounded-md">WARNING</span>
+<span class="text-white font-bold text-xs bg-black px-2.5 py-1 rounded-md">WARNING</span>
 </div>
 </div>
 <button class="mt-auto w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 text-white text-sm font-bold hover:shadow-xl hover:scale-[1.02] transition-all">
