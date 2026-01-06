@@ -129,11 +129,13 @@ class SupabaseQuery {
         $fullUrl = $url . (!empty($queryParams) ? '?' . http_build_query($queryParams) : '');
         
         if (function_exists('curl_init')) {
-            // cURL 사용
+            // cURL 사용 (성능 최적화: 타임아웃 설정)
             $ch = curl_init();
             curl_setopt_array($ch, [
                 CURLOPT_URL => $fullUrl,
                 CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 5, // 5초 타임아웃
+                CURLOPT_CONNECTTIMEOUT => 3, // 연결 타임아웃 3초
                 CURLOPT_HTTPHEADER => [
                     'apikey: ' . $this->supabaseKey,
                     'Authorization: Bearer ' . $this->supabaseKey,
@@ -146,10 +148,11 @@ class SupabaseQuery {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
         } else {
-            // file_get_contents 사용 (cURL이 없는 경우)
+            // file_get_contents 사용 (cURL이 없는 경우, 타임아웃 설정)
             $context = stream_context_create([
                 'http' => [
                     'method' => 'GET',
+                    'timeout' => 5, // 5초 타임아웃
                     'header' => [
                         'apikey: ' . $this->supabaseKey,
                         'Authorization: Bearer ' . $this->supabaseKey,
