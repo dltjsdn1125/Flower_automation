@@ -54,6 +54,35 @@ class SupabaseConnection {
     }
     
     /**
+     * 트랜잭션 시작 (Supabase는 자동 커밋이므로 빈 구현)
+     */
+    public function beginTransaction() {
+        return true;
+    }
+    
+    /**
+     * 트랜잭션 커밋 (Supabase는 자동 커밋이므로 빈 구현)
+     */
+    public function commit() {
+        return true;
+    }
+    
+    /**
+     * 트랜잭션 롤백 (Supabase는 자동 커밋이므로 빈 구현)
+     */
+    public function rollBack() {
+        return true;
+    }
+    
+    /**
+     * 마지막 삽입 ID 가져오기 (Supabase REST API는 삽입 후 응답에 id 포함)
+     */
+    public function lastInsertId($name = null) {
+        // SupabaseQuery에서 마지막 삽입 ID를 저장하도록 수정 필요
+        return $GLOBALS['_last_insert_id'] ?? null;
+    }
+    
+    /**
      * PDO 호환: 속성 가져오기
      */
     public function getAttribute($attribute) {
@@ -95,6 +124,12 @@ class SupabaseQuery {
             return [];
         }
         
+        // INSERT, UPDATE, DELETE 처리
+        if (isset($parsed['operation'])) {
+            return $this->executeMutation($parsed);
+        }
+        
+        // SELECT 처리
         $url = $this->supabaseUrl . '/rest/v1/' . $parsed['table'];
         $queryParams = [];
         
@@ -179,6 +214,92 @@ class SupabaseQuery {
         return [];
     }
     
+    /**
+     * INSERT, UPDATE, DELETE 실행 (Supabase REST API POST/PATCH/DELETE)
+     */
+    private function executeMutation($parsed) {
+        $url = $this->supabaseUrl . '/rest/v1/' . $parsed['table'];
+        $method = 'POST';
+        $data = [];
+        
+        // INSERT 처리
+        if ($parsed['operation'] === 'INSERT') {
+            // VALUES 절에서 데이터 추출
+            if (isset($parsed['values']) && !empty($this->params)) {
+                // 컬럼과 값 매핑
+                $columns = $parsed['columns'] ?? [];
+                foreach ($columns as $index => $column) {
+                    if (isset($this->params[$index])) {
+                        $data[$column] = $this->params[$index];
+                    }
+                }
+            }
+        }
+        
+        $headers = [
+            'apikey: ' . $this->supabaseKey,
+            'Authorization: Bearer ' . $this->supabaseKey,
+            'Content-Type: application/json',
+            'Prefer: return=representation'
+        ];
+        
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CUSTOMREQUEST => $method,
+                CURLOPT_POSTFIELDS => json_encode($data),
+                CURLOPT_TIMEOUT => 5,
+                CURLOPT_CONNECTTIMEOUT => 3,
+                CURLOPT_HTTPHEADER => $headers
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+        } else {
+            $context = stream_context_create([
+                'http' => [
+                    'method' => $method,
+                    'header' => $headers,
+                    'content' => json_encode($data),
+                    'timeout' => 5,
+                    'ignore_errors' => true
+                ]
+            ]);
+            
+            $response = @file_get_contents($url, false, $context);
+            $httpCode = 200;
+            if ($response === false) {
+                $httpCode = 500;
+            }
+        }
+        
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $result = json_decode($response, true);
+            // lastInsertId 저장
+            if (is_array($result) && isset($result[0]['id'])) {
+                $GLOBALS['_last_insert_id'] = $result[0]['id'];
+            } elseif (is_array($result) && isset($result['id'])) {
+                $GLOBALS['_last_insert_id'] = $result['id'];
+            }
+            return $result ?: [];
+        }
+        
+        error_log("Supabase Mutation Error: HTTP $httpCode - $response");
+        return [];
+    }
+    
+    /**
+     * rowCount() - INSERT/UPDATE/DELETE 후 영향받은 행 수
+     */
+    public function rowCount() {
+        // Supabase REST API는 자동으로 영향받은 행 수를 반환하지 않으므로
+        // fetchAll() 결과의 개수를 반환
+        return count($this->fetchAll());
+    }
+    
     public function fetch($mode = PDO::FETCH_ASSOC) {
         $results = $this->fetchAll($mode);
         return $results[0] ?? false;
@@ -191,13 +312,20 @@ class SupabaseQuery {
         return $values[$column] ?? false;
     }
     
-    public function rowCount() {
-        return count($this->fetchAll());
-    }
-    
     private function parseSQL($sql) {
         $result = [];
         $sql = trim($sql);
+        
+        // INSERT INTO table (columns) VALUES (?)
+        if (preg_match('/INSERT\s+INTO\s+(\w+)\s*\((.+?)\)\s*VALUES\s*\((.+?)\)/i', $sql, $matches)) {
+            $result['operation'] = 'INSERT';
+            $result['table'] = trim($matches[1]);
+            $columns = array_map('trim', explode(',', $matches[2]));
+            $result['columns'] = $columns;
+            $values = array_map('trim', explode(',', $matches[3]));
+            $result['values'] = $values;
+            return $result;
+        }
         
         // SELECT ... FROM table
         if (preg_match('/SELECT\s+(.+?)\s+FROM\s+(\w+)/i', $sql, $matches)) {

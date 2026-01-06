@@ -17,7 +17,16 @@
         
         try {
             const response = await fetch(url, options);
-            const result = await response.json();
+            
+            // 응답이 비어있는지 확인
+            const text = await response.text();
+            if (!text || text.trim() === '') {
+                console.error('API Error: Empty response');
+                showNotification('서버 응답이 비어있습니다.', 'error');
+                return null;
+            }
+            
+            const result = JSON.parse(text);
             
             if (!result.success) {
                 showNotification(result.message || '오류가 발생했습니다.', 'error');
