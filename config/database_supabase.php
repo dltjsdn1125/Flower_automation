@@ -52,6 +52,20 @@ class SupabaseConnection {
         // 여기서는 빈 결과 반환
         return 0;
     }
+    
+    /**
+     * PDO 호환: 속성 가져오기
+     */
+    public function getAttribute($attribute) {
+        switch ($attribute) {
+            case PDO::ATTR_DRIVER_NAME:
+                return 'supabase'; // Supabase 사용 표시
+            case PDO::ATTR_SERVER_INFO:
+                return 'Supabase PostgreSQL';
+            default:
+                return null;
+        }
+    }
 }
 
 /**
