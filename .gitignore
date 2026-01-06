@@ -1,0 +1,43 @@
+# 로그 파일
+logs/
+*.log
+
+# 환경 설정 파일
+config/local.php
+.env
+.env.local
+
+# IDE 설정
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS 파일
+.DS_Store
+Thumbs.db
+
+# 임시 파일
+tmp/
+temp/
+*.tmp
+
+# 업로드 파일 (필요시)
+uploads/
+
+# 데이터베이스 파일
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Composer
+vendor/
+composer.lock
+
+# Node modules (Vercel 빌드용)
+node_modules/
+
+# Vercel
+.vercel

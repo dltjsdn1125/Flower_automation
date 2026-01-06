@@ -1,0 +1,8 @@
+서버 상태: 실행 중
+주소: http://localhost:8000
+포트: 8000
+시작 시간: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+
+종료 방법:
+1. 터미널에서 Ctrl+C
+2. 또는 다음 명령 실행: Get-Process | Where-Object {$_.ProcessName -eq "php"} | Stop-Process

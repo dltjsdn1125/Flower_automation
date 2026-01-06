@@ -1,0 +1,29 @@
+# Apache 설정 파일
+
+# PHP 에러 표시 (개발 환경)
+# php_flag display_errors On
+
+# 디렉토리 인덱싱 비활성화
+Options -Indexes
+
+# URL 리라이트
+RewriteEngine On
+RewriteBase /
+
+# PHP 파일이 아닌 경우 index.php로 리다이렉트
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# 보안 헤더
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# 파일 접근 제한
+<FilesMatch "\.(sql|log|ini)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
