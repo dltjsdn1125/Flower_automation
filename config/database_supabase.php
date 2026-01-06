@@ -140,8 +140,8 @@ class SupabaseQuery {
             }
         }
         
-        // SELECT 컬럼
-        if (isset($parsed['select'])) {
+        // SELECT 컬럼 (SELECT *인 경우 select 파라미터 생략)
+        if (isset($parsed['select']) && $parsed['select'] !== '*') {
             $queryParams['select'] = $parsed['select'];
         }
         
@@ -162,6 +162,12 @@ class SupabaseQuery {
         
         // cURL 또는 file_get_contents 사용
         $fullUrl = $url . (!empty($queryParams) ? '?' . http_build_query($queryParams) : '');
+        
+        // 디버깅: URL과 파라미터 로깅 (개발 모드에서만)
+        if (defined('DEBUG') && DEBUG) {
+            error_log("Supabase API Request: $fullUrl");
+            error_log("Supabase Query Params: " . json_encode($queryParams));
+        }
         
         if (function_exists('curl_init')) {
             // cURL 사용 (성능 최적화: 타임아웃 설정)
@@ -184,23 +190,36 @@ class SupabaseQuery {
             curl_close($ch);
         } else {
             // file_get_contents 사용 (cURL이 없는 경우, 타임아웃 설정)
+            $headers = [
+                'apikey: ' . $this->supabaseKey,
+                'Authorization: Bearer ' . $this->supabaseKey,
+                'Content-Type: application/json',
+                'Prefer: return=representation'
+            ];
+            
             $context = stream_context_create([
                 'http' => [
                     'method' => 'GET',
                     'timeout' => 5, // 5초 타임아웃
-                    'header' => [
-                        'apikey: ' . $this->supabaseKey,
-                        'Authorization: Bearer ' . $this->supabaseKey,
-                        'Content-Type: application/json',
-                        'Prefer: return=representation'
-                    ],
+                    'header' => implode("\r\n", $headers),
                     'ignore_errors' => true
                 ]
             ]);
             
             $response = @file_get_contents($fullUrl, false, $context);
-            $httpCode = 200; // file_get_contents는 HTTP 코드를 직접 반환하지 않으므로 기본값 사용
-            if ($response === false) {
+            
+            // HTTP 응답 코드 파싱
+            $httpCode = 500;
+            if ($response !== false && isset($http_response_header)) {
+                // HTTP/1.1 200 OK 형식에서 코드 추출
+                if (isset($http_response_header[0]) && preg_match('/HTTP\/\d\.\d\s+(\d+)/', $http_response_header[0], $matches)) {
+                    $httpCode = (int)$matches[1];
+                } else {
+                    $httpCode = 200; // 응답이 있으면 성공으로 간주
+                }
+            } elseif ($response === false) {
+                $error = error_get_last();
+                error_log("file_get_contents failed: " . ($error['message'] ?? 'Unknown error'));
                 $httpCode = 500;
             }
         }
@@ -210,7 +229,14 @@ class SupabaseQuery {
             return $data ?: [];
         }
         
-        error_log("Supabase API Error: HTTP $httpCode - $response");
+        // HTTP 오류 시 상세 정보 로깅
+        $errorInfo = [
+            'http_code' => $httpCode,
+            'url' => $fullUrl,
+            'response' => $response,
+            'query_params' => $queryParams
+        ];
+        error_log("Supabase API Error: " . json_encode($errorInfo, JSON_UNESCAPED_UNICODE));
         return [];
     }
     
